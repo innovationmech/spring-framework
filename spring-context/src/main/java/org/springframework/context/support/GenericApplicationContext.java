@@ -112,6 +112,8 @@ public class GenericApplicationContext extends AbstractApplicationContext implem
 	 * @see #refresh
 	 */
 	public GenericApplicationContext() {
+		// Create a DefaultListableBeanFactory with default settings.
+		// 内部核心的spring bean容器
 		this.beanFactory = new DefaultListableBeanFactory();
 	}
 

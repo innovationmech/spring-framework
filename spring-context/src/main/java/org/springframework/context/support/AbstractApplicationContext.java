@@ -556,41 +556,55 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			StartupStep contextRefresh = this.applicationStartup.start("spring.context.refresh");
 
 			// Prepare this context for refreshing.
+			// 准备刷新上下文环境，例如设置启动时间、活跃状态等
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
+			// 获取或创建BeanFactory实例，不同的ApplicationContext实现会有不同的实现
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
+			// 准备 BeanFactory，例如设置 ClassLoader, BeanPostProcessors 等
 			prepareBeanFactory(beanFactory);
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
+				// 子类定制化的 BeanFactory 后置处理 (例如 Spring MVC 中的 ApplicationContext)
 				postProcessBeanFactory(beanFactory);
 
 				StartupStep beanPostProcess = this.applicationStartup.start("spring.context.beans.post-process");
 				// Invoke factory processors registered as beans in the context.
+				// 执行 BeanFactoryPostProcessor 的后置处理
+				// 允许在 Bean 定义加载完成后，Bean 实例化之前，对 BeanFactory 进行修改和增强
+				// ConfigurationClassPostProcessor 会扫描配置类，解析注解，并将 Bean 定义信息注册到 DefaultListableBeanFactory 中
 				invokeBeanFactoryPostProcessors(beanFactory);
 				// Register bean processors that intercept bean creation.
+				// 注册 BeanPostProcessor，拦截Bean的创建
 				registerBeanPostProcessors(beanFactory);
 				beanPostProcess.end();
 
 				// Initialize message source for this context.
+				// 初始化 MessageSource，用于国际化
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
+				// 初始化 ApplicationEventMulticaster，用于事件广播
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
+				// 子类定制化的 onRefresh() 方法，允许子类在容器刷新时进行定制化操作
 				onRefresh();
 
 				// Check for listener beans and register them.
+				// 注册监听器
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
+				// 完成 BeanFactory 的初始化 (关键步骤: 实例化所有剩余的 (non-lazy-init singleton) Bean)
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
+				// 完成刷新过程，发布容器刷新完成事件
 				finishRefresh();
 			}
 
