@@ -647,15 +647,20 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					// 使用早期引用（可能是代理对象）
 					exposedObject = earlySingletonReference;
 				}
+				// 边缘情况，如果当前对象被初始化方法改变返回了新的对象，Spring不会将exposedObject替换为earlySingletonReference
+				// 判断是否有其他Bean通过循环依赖注入了旧的引用
 				else if (!this.allowRawInjectionDespiteWrapping && hasDependentBean(beanName)) {
 					String[] dependentBeans = getDependentBeans(beanName);
 					Set<String> actualDependentBeans = new LinkedHashSet<>(dependentBeans.length);
 					for (String dependentBean : dependentBeans) {
+						// 过滤掉仅为类型检查而创建的Bean依赖
 						if (!removeSingletonIfCreatedForTypeCheckOnly(dependentBean)) {
 							actualDependentBeans.add(dependentBean);
 						}
 					}
+					// 如果仍有实际依赖，抛出BeanCurrentlyInCreationException异常
 					if (!actualDependentBeans.isEmpty()) {
+						// 异常信息明确指出：其他Bean使用了此Bean的早期版本，而非最终版本
 						throw new BeanCurrentlyInCreationException(beanName,
 								"Bean with name '" + beanName + "' has been injected into other beans [" +
 								StringUtils.collectionToCommaDelimitedString(actualDependentBeans) +
