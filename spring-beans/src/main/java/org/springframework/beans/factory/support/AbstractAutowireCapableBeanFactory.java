@@ -611,9 +611,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.trace("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
-			// 将Bean添加到三级缓存中
+			// 将原始对象工厂添加到三级缓存中，以便后续循环依赖时使用
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
+
+		// 为什么可以先创建代理，再完成目标对象的初始化：
+		// 1. 代理对象内部持有对目标对象的引用
+		// 2. 目标对象会继续完成属性注入和初始化
+		// 3. 当使用代理对象调用方法时，会委托给已完全初始化的目标对象，所以代理对象有完整的功能
 
 		// Initialize the bean instance.
 		Object exposedObject = bean;
@@ -634,9 +639,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		if (earlySingletonExposure) {
+			// 获取可能存在的早期引用
 			Object earlySingletonReference = getSingleton(beanName, false);
 			if (earlySingletonReference != null) {
+				// 如果当前对象没有被初始化方法改变，及没有返回新的对象实例
 				if (exposedObject == bean) {
+					// 使用早期引用（可能是代理对象）
 					exposedObject = earlySingletonReference;
 				}
 				else if (!this.allowRawInjectionDespiteWrapping && hasDependentBean(beanName)) {
@@ -986,6 +994,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object exposedObject = bean;
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (SmartInstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().smartInstantiationAware) {
+				// 可以进行代理逻辑增强，可能创建AOP代理对象
 				exposedObject = bp.getEarlyBeanReference(exposedObject, beanName);
 			}
 		}
