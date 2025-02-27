@@ -311,10 +311,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				checkMergedBeanDefinition(mbd, beanName, args);
 
 				// Guarantee initialization of beans that the current bean depends on.
+				// 处理显式声明的初始化顺序依赖,即depends-on依赖，注意与依赖注入的依赖关系区分开来
+				// depends-on依赖是指在bean的定义中通过depends-on属性(xml)或@DependsOn注解显式声明的依赖关系
+				// 这种循环依赖在逻辑上无法解决：A必须在B前初始化，B又必须在A前初始化
+				// 这种情况下，Spring直接禁止并会抛出BeanCreationException异常
 				String[] dependsOn = mbd.getDependsOn();
 				if (dependsOn != null) {
 					for (String dep : dependsOn) {
-						// 检测循环依赖
 						if (isDependent(beanName, dep)) {
 							throw new BeanCreationException(mbd.getResourceDescription(), beanName,
 									"Circular depends-on relationship between '" + beanName + "' and '" + dep + "'");
