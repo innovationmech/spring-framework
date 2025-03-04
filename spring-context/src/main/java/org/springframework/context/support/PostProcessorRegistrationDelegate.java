@@ -119,6 +119,7 @@ final class PostProcessorRegistrationDelegate {
 			// 排序并调用
 			sortPostProcessors(currentRegistryProcessors, beanFactory);
 			registryProcessors.addAll(currentRegistryProcessors);
+			// org.springframework.context.annotation.internalConfigurationAnnotationProcessor即ConfigurationClassPostProcessor在这里处理
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry, beanFactory.getApplicationStartup());
 			currentRegistryProcessors.clear();
 
